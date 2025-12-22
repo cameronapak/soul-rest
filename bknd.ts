@@ -14,93 +14,100 @@ const connection = sqlite({ url: 'file:./data.db' })
 const config = {
   connection,
   config: {
-    data: em({
-      pendingPartners: entity(
-        'pendingPartners',
-        {
-          name: text(),
-          contactName: text({
-            label: 'Contact Name',
-          }),
-          contactEmail: text({
-            label: 'Contact Email',
-          }),
-          website: text(),
-          whyWantListed: text({
-            label: 'Reason to be Listed',
-          }),
-          whyPartner: text({
-            label: 'Reason to Partner',
-          }),
-          logoUrl: text({
-            label: 'Logo URL',
-          }),
-          adminNotes: text({
-            label: 'Admin Notes',
-          }),
-          status: enumm<'pending' | 'rejected' | 'approved'>({
-            enum: [
-              { value: 'pending', label: 'Pending' },
-              { value: 'rejected', label: 'Rejected' },
-              { value: 'approved', label: 'Approved' },
-            ],
-          }),
-        },
-        {
-          name: 'Pending Partners',
-          name_singular: 'Pending Partner',
-          primary_format: 'uuid',
-        }
-      ),
-      partners: entity(
-        'partners',
-        {
-          name: text(),
-          contactName: text({
-            label: 'Contact Name',
-          }),
-          contactEmail: text({
-            label: 'Contact Email',
-          }),
-          website: text(),
-          logoUrl: text({
-            label: 'Logo URL',
-          }),
-          approvedAt: date({
-            label: 'Approved At',
-          }),
-        },
-        {
-          name: 'Partners',
-          name_singular: 'Partner',
-          primary_format: 'uuid',
-        }
-      ),
-      meditations: entity(
-        'meditations',
-        {
-          title: text(),
-          description: text(),
-          contentUrl: text({
-            label: 'Content URL',
-          }),
-          partnerId: text({
-            label: 'Partner ID',
-          }),
-          duration: number(),
-          thumbnailUrl: text({
-            label: 'Thumbnail Url',
-          }),
-          listens: number(),
-          published: boolean({ default_value: true }),
-        },
-        {
-          name: 'Meditations',
-          primary_format: 'uuid',
-          name_singular: 'Meditation',
-        }
-      ),
-    }).toJSON(),
+    data: em(
+      {
+        pendingPartners: entity(
+          'pendingPartners',
+          {
+            name: text(),
+            contactName: text({
+              label: 'Contact Name',
+            }),
+            contactEmail: text({
+              label: 'Contact Email',
+            }),
+            website: text(),
+            whyWantListed: text({
+              label: 'Reason to be Listed',
+            }),
+            whyPartner: text({
+              label: 'Reason to Partner',
+            }),
+            logoUrl: text({
+              label: 'Logo URL',
+            }),
+            adminNotes: text({
+              label: 'Admin Notes',
+            }),
+            status: enumm<'pending' | 'rejected' | 'approved'>({
+              enum: [
+                { value: 'pending', label: 'Pending' },
+                { value: 'rejected', label: 'Rejected' },
+                { value: 'approved', label: 'Approved' },
+              ],
+            }),
+          },
+          {
+            name: 'Pending Partners',
+            name_singular: 'Pending Partner',
+            primary_format: 'uuid',
+          }
+        ),
+        partners: entity(
+          'partners',
+          {
+            name: text(),
+            contactName: text({
+              label: 'Contact Name',
+            }),
+            contactEmail: text({
+              label: 'Contact Email',
+            }),
+            website: text(),
+            logoUrl: text({
+              label: 'Logo URL',
+            }),
+            approvedAt: date({
+              label: 'Approved At',
+            }),
+          },
+          {
+            name: 'Partners',
+            name_singular: 'Partner',
+            primary_format: 'uuid',
+          }
+        ),
+        meditations: entity(
+          'meditations',
+          {
+            title: text(),
+            description: text(),
+            contentUrl: text({
+              label: 'Content URL',
+            }),
+            partnerId: text({
+              label: 'Partner ID',
+            }),
+            duration: number(),
+            thumbnailUrl: text({
+              label: 'Thumbnail Url',
+            }),
+            listens: number(),
+            published: boolean({ default_value: true }),
+          },
+          {
+            name: 'Meditations',
+            primary_format: 'uuid',
+            name_singular: 'Meditation',
+          }
+        ),
+      },
+      ({ relation }, { meditations, partners }) => {
+        relation(meditations).manyToOne(partners, {
+          mappedBy: 'partnerId',
+        })
+      }
+    ).toJSON(),
   },
   onBuilt: async (app) => {
     // This can only really run locally because it requires
