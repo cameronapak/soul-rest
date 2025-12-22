@@ -1,7 +1,5 @@
-import { ServerSentEventGenerator } from '@starfederation/datastar-sdk/web'
 import { type Context, Hono } from 'hono'
 import { bkndApp, getApi } from '../bknd.ts'
-import { PostItem } from './components/post-item.tsx'
 import { Layout } from './layouts'
 import { EmptyState } from './components/empty-state.tsx'
 import { Message } from './components/icons/message.tsx'
@@ -9,49 +7,55 @@ import { Message } from './components/icons/message.tsx'
 const app = new Hono()
 
 app.route('/', bkndApp)
+
+// Meditation Item component
+const MeditationItem = ({ title, id, audioUrl }: { title: string; id: string; audioUrl: string }) => {
+  return (
+    <div id={`meditation-${id}`} class="flex items-center justify-between gap-4 p-4 border rounded-lg bg-card">
+      <span class="font-medium">{title}</span>
+      {/* @ts-expect-error - captions not needed for this simple POC */}
+      <audio id={`audio-${id}`} src={audioUrl} controls class="w-full"></audio>
+    </div>
+  )
+}
+
 app.get('/', async (c) => {
   const bkndApi = await getApi(c)
-  const { data: posts } = await bkndApi.data.readMany('posts', {
-    limit: 500,
+  const { data: meditations } = await bkndApi.data.readMany('meditations', {
+    where: {
+      published: true,
+    },
+    with: {
+      content: {},
+    },
     sort: '-created_at',
+    limit: 500,
   })
 
   return c.html(
-    <Layout>
-      <section data-signals:content="''" class="flex flex-col gap-4 grow p-6">
-        <h1 class="text-4xl font-bold">Microblog</h1>
-        <div class="flex flex-wrap items-center gap-2">
-          <a href="/admin" class="btn">
-            Admin
-          </a>
-        </div>
+    <Layout title="Meditations">
+      <section class="flex flex-col gap-4 grow p-6">
+        <h1 class="text-4xl font-bold">Meditations</h1>
+        <a href="/admin" class="btn w-fit">
+          Admin
+        </a>
 
-        <form data-on:submit="@post('/create-post')" class="form grid gap-6 mb-6">
-          <textarea
-            data-bind="content"
-            data-on:keydown="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); event.target.closest('form').requestSubmit(); }"
-            placeholder="What's on your mind?"
-            rows={3}
-            class="textarea"
-          ></textarea>
-
-          <button type="submit" class="btn">
-            Post
-          </button>
-        </form>
-
-        <div id="posts-container">
-          {posts && posts.length > 0 ? (
-            <ul id="posts" class="flex flex-col gap-4">
-              {posts.map((post) => {
-                return <PostItem postId={post.id} key={post.id} content={post.content as string} createdAt={post.created_at as string} />
+        <div id="meditations-container">
+          {meditations && meditations.length > 0 ? (
+            <div id="meditations" class="flex flex-col gap-4">
+              {meditations.map((meditation) => {
+                const content = meditation.content as { path?: string } | null
+                const audioUrl = content?.path ? `/api/media/file/${content.path}` : ''
+                return (
+                  <MeditationItem key={meditation.id} id={meditation.id as string} title={meditation.title as string} audioUrl={audioUrl} />
+                )
               })}
-            </ul>
+            </div>
           ) : (
             <EmptyState
               id="empty-state"
-              title="No Posts Yet"
-              description=" You haven't created any posts yet. Share your thoughts with your first microblog post!"
+              title="No Meditations Yet"
+              description="No meditations available. Check back soon!"
               icon={<Message />}
             />
           )}
@@ -61,94 +65,26 @@ app.get('/', async (c) => {
   )
 })
 
-app.post('/create-post', async (c: Context) => {
-  const reader = await ServerSentEventGenerator.readSignals(c.req.raw)
+app.post('/increment-listens/:meditationId', async (c: Context) => {
+  const meditationId = c.req.param('meditationId')
 
-  if (!reader.success) {
-    console.error('Error reading signals:', reader.error)
-    return
-  }
-
-  if (reader.signals.content) {
-    const bkndApi = await getApi(c)
-    const post = await bkndApi.data.createOne('posts', {
-      content: reader.signals.content,
-    })
-
-    return ServerSentEventGenerator.stream((stream) => {
-      // If posts list already exists, prepend the new post to it
-      stream.patchElements(
-        (<PostItem postId={post.id} content={reader.signals.content as string} createdAt={post.created_at as string} />).toString(),
-        {
-          selector: '#posts',
-          mode: 'prepend',
-        }
-      )
-
-      // If empty state exists, replace it with posts list containing the new post
-      stream.patchElements(
-        (
-          <ul id="posts" class="flex flex-col gap-4">
-            <PostItem postId={post.id} content={reader.signals.content as string} createdAt={post.created_at as string} />
-          </ul>
-        ).toString(),
-        {
-          selector: '#empty-state',
-          mode: 'replace',
-        }
-      )
-
-      stream.patchSignals(JSON.stringify({ content: '' }))
-    })
-  }
-})
-
-app.delete('/delete-post/:postId', async (c: Context) => {
-  const postId = c.req.param('postId')
-
-  if (!postId) {
-    return c.json({ error: 'Post ID is required' }, 400)
+  if (!meditationId) {
+    return c.json({ error: 'Meditation ID is required' }, 400)
   }
 
   try {
     const bkndApi = await getApi(c)
-    await bkndApi.data.deleteOne('posts', postId)
+    const meditation = await bkndApi.data.readOne('meditations', meditationId)
+    const currentListens = (meditation.data as { listens?: number })?.listens || 0
 
-    // Check remaining posts count
-    const { data: remainingPosts } = await bkndApi.data.readMany('posts', {
-      limit: 500,
+    await bkndApi.data.updateOne('meditations', meditationId, {
+      listens: currentListens + 1,
     })
 
-    const remainingCount = remainingPosts?.length || 0
-
-    return ServerSentEventGenerator.stream((stream) => {
-      if (remainingCount === 0) {
-        // Replace entire posts container content with empty state
-        stream.patchElements(
-          (
-            <EmptyState
-              id="empty-state"
-              title="No Posts Yet"
-              description=" You haven't created any posts yet. Share your thoughts with your first microblog post!"
-              icon={<Message />}
-            />
-          ).toString(),
-          {
-            selector: '#posts-container',
-            mode: 'inner',
-          }
-        )
-      } else {
-        // Just remove the post element
-        stream.patchElements('', {
-          selector: `#post-${postId}`,
-          mode: 'remove',
-        })
-      }
-    })
+    return c.json({ success: true })
   } catch (error) {
-    console.error('Error deleting post:', error)
-    return c.json({ error: 'Failed to delete post' }, 500)
+    console.error('Error incrementing listens:', error)
+    return c.json({ error: 'Failed to increment listens' }, 500)
   }
 })
 
