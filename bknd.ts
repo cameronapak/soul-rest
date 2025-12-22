@@ -1,5 +1,5 @@
 import { createRuntimeApp } from 'bknd/adapter'
-import { em, entity, text, number, boolean, enumm, date } from 'bknd'
+import { em, entity, text, number, boolean, enumm, date, medium, systemEntity } from 'bknd'
 import { sqlite } from 'bknd/adapter/sqlite'
 import type { BkndConfig } from 'bknd'
 import { syncTypes, timestamps } from 'bknd/plugins'
@@ -8,7 +8,9 @@ import type { Context } from 'hono'
 import { Hono } from 'hono'
 import { serveStatic } from 'hono/bun'
 import type { CodeMode } from 'bknd/modes'
-import { writer } from 'bknd/adapter/bun'
+import { writer, registerLocalMediaAdapter } from 'bknd/adapter/bun'
+
+const local = registerLocalMediaAdapter()
 
 const connection = sqlite({ url: 'file:./data.db' })
 const config = {
@@ -33,9 +35,7 @@ const config = {
             whyPartner: text({
               label: 'Reason to Partner',
             }),
-            logoUrl: text({
-              label: 'Logo URL',
-            }),
+            logo: medium(),
             adminNotes: text({
               label: 'Admin Notes',
             }),
@@ -64,9 +64,7 @@ const config = {
               label: 'Contact Email',
             }),
             website: text(),
-            logoUrl: text({
-              label: 'Logo URL',
-            }),
+            logo: medium(),
             approvedAt: date({
               label: 'Approved At',
             }),
@@ -82,16 +80,9 @@ const config = {
           {
             title: text(),
             description: text(),
-            contentUrl: text({
-              label: 'Content URL',
-            }),
-            partnerId: text({
-              label: 'Partner ID',
-            }),
+            content: medium(),
             duration: number(),
-            thumbnailUrl: text({
-              label: 'Thumbnail Url',
-            }),
+            thumbnail: medium(),
             listens: number(),
             published: boolean({ default_value: true }),
           },
@@ -101,13 +92,30 @@ const config = {
             name_singular: 'Meditation',
           }
         ),
+        media: systemEntity('media', {}),
       },
-      ({ relation }, { meditations, partners }) => {
-        relation(meditations).manyToOne(partners, {
-          mappedBy: 'partnerId',
+      ({ relation }, { pendingPartners, partners, meditations, media }) => {
+        relation(meditations).manyToOne(partners)
+        relation(pendingPartners).polyToOne(media, {
+          mappedBy: 'logo',
+        })
+        relation(partners).polyToOne(media, {
+          mappedBy: 'logo',
+        })
+        relation(meditations).polyToOne(media, {
+          mappedBy: 'content',
+        })
+        relation(meditations).polyToOne(media, {
+          mappedBy: 'thumbnail',
         })
       }
     ).toJSON(),
+    media: {
+      enabled: true,
+      adapter: local({
+        path: './public/uploads',
+      }),
+    },
   },
   onBuilt: async (app) => {
     // This can only really run locally because it requires
