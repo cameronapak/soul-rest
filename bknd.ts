@@ -1,5 +1,5 @@
 import { createRuntimeApp } from 'bknd/adapter'
-import { em, entity, text } from 'bknd'
+import { em, entity, text, number, boolean, enumm, date } from 'bknd'
 import { sqlite } from 'bknd/adapter/sqlite'
 import type { BkndConfig } from 'bknd'
 import { syncTypes, timestamps } from 'bknd/plugins'
@@ -15,9 +15,91 @@ const config = {
   connection,
   config: {
     data: em({
-      posts: entity('posts', {
-        content: text(),
-      }),
+      pendingPartners: entity(
+        'pendingPartners',
+        {
+          name: text(),
+          contactName: text({
+            label: 'Contact Name',
+          }),
+          contactEmail: text({
+            label: 'Contact Email',
+          }),
+          website: text(),
+          whyWantListed: text({
+            label: 'Reason to be Listed',
+          }),
+          whyPartner: text({
+            label: 'Reason to Partner',
+          }),
+          logoUrl: text({
+            label: 'Logo URL',
+          }),
+          adminNotes: text({
+            label: 'Admin Notes',
+          }),
+          status: enumm<'pending' | 'rejected' | 'approved'>({
+            enum: [
+              { value: 'pending', label: 'Pending' },
+              { value: 'rejected', label: 'Rejected' },
+              { value: 'approved', label: 'Approved' },
+            ],
+          }),
+        },
+        {
+          name: 'Pending Partners',
+          name_singular: 'Pending Partner',
+          primary_format: 'uuid',
+        }
+      ),
+      partners: entity(
+        'partners',
+        {
+          name: text(),
+          contactName: text({
+            label: 'Contact Name',
+          }),
+          contactEmail: text({
+            label: 'Contact Email',
+          }),
+          website: text(),
+          logoUrl: text({
+            label: 'Logo URL',
+          }),
+          approvedAt: date({
+            label: 'Approved At',
+          }),
+        },
+        {
+          name: 'Partners',
+          name_singular: 'Partner',
+          primary_format: 'uuid',
+        }
+      ),
+      meditations: entity(
+        'meditations',
+        {
+          title: text(),
+          description: text(),
+          contentUrl: text({
+            label: 'Content URL',
+          }),
+          partnerId: text({
+            label: 'Partner ID',
+          }),
+          duration: number(),
+          thumbnailUrl: text({
+            label: 'Thumbnail Url',
+          }),
+          listens: number(),
+          published: boolean({ default_value: true }),
+        },
+        {
+          name: 'Meditations',
+          primary_format: 'uuid',
+          name_singular: 'Meditation',
+        }
+      ),
     }).toJSON(),
   },
   onBuilt: async (app) => {
@@ -33,9 +115,7 @@ const config = {
     mode: 'code',
     plugins: [
       timestamps({
-        // the entities to add timestamps to
-        entities: ['posts'],
-        // whether to set the `updated_at` field on create, defaults to true
+        entities: ['pendingPartners', 'partners', 'meditations'],
         setUpdatedOnCreate: true,
       }),
 
@@ -44,6 +124,7 @@ const config = {
         enabled: true,
         // your writing function (required)
         write: async (et) => {
+          console.log('WRITE')
           await Bun.write('bknd-types.d.ts', et.toString())
         },
       }),
