@@ -1,7 +1,7 @@
 import type { BkndConfig } from 'bknd'
 import { boolean, date, em, entity, enumm, medium, number, systemEntity, text } from 'bknd'
 import { createRuntimeApp } from 'bknd/adapter'
-import { registerLocalMediaAdapter, writer, reader } from 'bknd/adapter/bun'
+import { reader, registerLocalMediaAdapter, writer } from 'bknd/adapter/bun'
 import { sqlite } from 'bknd/adapter/sqlite'
 import { Api } from 'bknd/client'
 import { hybrid, type HybridMode } from 'bknd/modes'
