@@ -8,7 +8,6 @@ import { hybrid, type HybridMode } from 'bknd/modes'
 import { syncTypes, timestamps } from 'bknd/plugins'
 import type { Context } from 'hono'
 import { Hono } from 'hono'
-import { writeFile } from 'node:fs/promises'
 import { serveStatic } from 'hono/bun'
 
 const local = registerLocalMediaAdapter()
@@ -148,7 +147,7 @@ const config = hybrid({
         // your writing function (required)
         write: async (et) => {
           console.log('WRITE FILES')
-          await writeFile('bknd-types.d.ts', et.toString(), 'utf-8')
+          await Bun.write('bknd-types.d.ts', et.toString())
         },
       }),
     ],
