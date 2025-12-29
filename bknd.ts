@@ -1,14 +1,14 @@
-import { createRuntimeApp } from 'bknd/adapter'
-import { em, entity, text, number, boolean, enumm, date, medium, systemEntity } from 'bknd'
-import { sqlite } from 'bknd/adapter/sqlite'
 import type { BkndConfig } from 'bknd'
-import { syncTypes, timestamps } from 'bknd/plugins'
+import { boolean, date, em, entity, enumm, medium, number, systemEntity, text } from 'bknd'
+import { createRuntimeApp } from 'bknd/adapter'
+import { registerLocalMediaAdapter, writer } from 'bknd/adapter/bun'
+import { sqlite } from 'bknd/adapter/sqlite'
 import { Api } from 'bknd/client'
+import type { HybridMode } from 'bknd/modes'
+import { syncTypes, timestamps } from 'bknd/plugins'
 import type { Context } from 'hono'
 import { Hono } from 'hono'
 import { serveStatic } from 'hono/bun'
-import type { CodeMode } from 'bknd/modes'
-import { writer, registerLocalMediaAdapter } from 'bknd/adapter/bun'
 
 const local = registerLocalMediaAdapter()
 
@@ -94,7 +94,7 @@ const config = {
         ),
         media: systemEntity('media', {}),
       },
-      ({ relation }, { pendingPartners, partners, meditations, media }) => {
+      ({ relation, index }, { pendingPartners, partners, meditations, media }) => {
         relation(meditations).manyToOne(partners)
         relation(pendingPartners).polyToOne(media, {
           mappedBy: 'logo',
@@ -108,6 +108,10 @@ const config = {
         relation(meditations).polyToOne(media, {
           mappedBy: 'thumbnail',
         })
+
+        index(meditations)
+          // .on(['created_at'])
+          .on(['published'])
       }
     ).toJSON(),
     media: {
@@ -127,7 +131,10 @@ const config = {
     }
   },
   options: {
-    mode: 'code',
+    mode: process.env.NODE_ENV === 'development' ? 'db' : 'code',
+    manager: {
+      secrets: process.env,
+    },
     plugins: [
       timestamps({
         entities: ['pendingPartners', 'partners', 'meditations'],
@@ -156,7 +163,7 @@ const config = {
     force: true,
     drop: true,
   },
-} as CodeMode<BkndConfig>
+} as HybridMode<BkndConfig>
 
 export async function getBkndApp(context: Context) {
   const app = await createRuntimeApp(config, context)
