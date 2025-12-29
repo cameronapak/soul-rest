@@ -4,7 +4,7 @@ import { createRuntimeApp } from 'bknd/adapter'
 import { reader, registerLocalMediaAdapter, writer } from 'bknd/adapter/bun'
 import { sqlite } from 'bknd/adapter/sqlite'
 import { Api } from 'bknd/client'
-import { hybrid, type HybridMode } from 'bknd/modes'
+import { code, type CodeMode } from 'bknd/modes'
 import { syncTypes, timestamps } from 'bknd/plugins'
 import type { Context } from 'hono'
 import { Hono } from 'hono'
@@ -13,7 +13,7 @@ import { serveStatic } from 'hono/bun'
 const local = registerLocalMediaAdapter()
 
 const connection = sqlite({ url: 'file:./data.db' })
-const config = hybrid({
+const config = code({
   connection,
   config: {
     data: em(
@@ -85,6 +85,9 @@ const config = hybrid({
             thumbnail: medium(),
             listens: number(),
             published: boolean({ default_value: true }),
+            youtubeUrl: text({
+              label: 'YouTube URL',
+            }),
           },
           {
             name: 'Meditations',
@@ -131,7 +134,7 @@ const config = hybrid({
     }
   },
   options: {
-    mode: process.env.NODE_ENV === 'development' ? 'db' : 'code',
+    mode: 'code',
     manager: {
       secrets: process.env,
     },
@@ -171,7 +174,7 @@ const config = hybrid({
     force: true,
     drop: true,
   },
-}) as HybridMode<BkndConfig>
+}) as CodeMode<BkndConfig>
 
 let bkndRuntimeAppInstance: Awaited<ReturnType<typeof createRuntimeApp>> | null = null
 let apiInstance: Api | null = null

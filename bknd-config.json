@@ -18,14 +18,12 @@
       "allow_credentials": true
     },
     "mcp": {
-      "enabled": true,
+      "enabled": false,
       "path": "/api/system/mcp",
-      "logLevel": "emergency"
+      "logLevel": "warning"
     }
   },
   "data": {
-    "basepath": "/api/data",
-    "default_primary_format": "integer",
     "entities": {
       "pendingPartners": {
         "type": "regular",
@@ -120,20 +118,6 @@
               },
               "required": false
             }
-          },
-          "created_at": {
-            "type": "date",
-            "config": {
-              "type": "datetime",
-              "required": false
-            }
-          },
-          "updated_at": {
-            "type": "date",
-            "config": {
-              "type": "datetime",
-              "required": false
-            }
           }
         },
         "config": {
@@ -199,20 +183,6 @@
             "config": {
               "label": "Approved At",
               "type": "date",
-              "required": false
-            }
-          },
-          "created_at": {
-            "type": "date",
-            "config": {
-              "type": "datetime",
-              "required": false
-            }
-          },
-          "updated_at": {
-            "type": "date",
-            "config": {
-              "type": "datetime",
               "required": false
             }
           }
@@ -293,6 +263,13 @@
               "required": false
             }
           },
+          "youtubeUrl": {
+            "type": "text",
+            "config": {
+              "label": "YouTube URL",
+              "required": false
+            }
+          },
           "partners_id": {
             "type": "relation",
             "config": {
@@ -303,20 +280,6 @@
               "target_field": "id",
               "target_field_type": "text",
               "on_delete": "set null"
-            }
-          },
-          "created_at": {
-            "type": "date",
-            "config": {
-              "type": "datetime",
-              "required": false
-            }
-          },
-          "updated_at": {
-            "type": "date",
-            "config": {
-              "type": "datetime",
-              "required": false
             }
           }
         },
@@ -491,7 +454,9 @@
         ],
         "unique": false
       }
-    }
+    },
+    "basepath": "/api/data",
+    "default_primary_format": "integer"
   },
   "auth": {
     "enabled": false,
@@ -534,17 +499,15 @@
   },
   "media": {
     "enabled": true,
-    "basepath": "/api/media",
-    "entity_name": "media",
-    "storage": {
-      "body_max_size": 0
-    },
     "adapter": {
       "type": "local",
       "config": {
         "path": "./public/uploads"
       }
-    }
+    },
+    "basepath": "/api/media",
+    "entity_name": "media",
+    "storage": {}
   },
   "flows": {
     "basepath": "/api/flows",

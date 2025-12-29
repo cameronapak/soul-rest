@@ -17,8 +17,6 @@ export interface PendingPartners {
   whyPartner?: string;
   adminNotes?: string;
   status?: "pending" | "rejected" | "approved";
-  created_at?: Date | string;
-  updated_at?: Date | string;
   logo?: DB["media"];
 }
 
@@ -29,8 +27,6 @@ export interface Partners {
   contactEmail?: string;
   website?: string;
   approvedAt?: Date | string;
-  created_at?: Date | string;
-  updated_at?: Date | string;
   meditations?: Meditations[];
   logo?: DB["media"];
 }
@@ -42,9 +38,8 @@ export interface Meditations {
   duration?: number;
   listens?: number;
   published?: boolean;
+  youtubeUrl?: string;
   partners_id?: string;
-  created_at?: Date | string;
-  updated_at?: Date | string;
   partners?: Partners;
   content?: DB["media"];
   thumbnail?: DB["media"];
