@@ -28,7 +28,7 @@ app.get('/', async (c) => {
     with: {
       content: {},
     },
-    sort: '-created_at',
+    // sort: '-created_at',
     limit: 500,
   })
 
@@ -44,8 +44,23 @@ app.get('/', async (c) => {
           {meditations && meditations.length > 0 ? (
             <div id="meditations" class="flex flex-col gap-4">
               {meditations.map((meditation) => {
-                const content = meditation.content as { path?: string } | null
-                const audioUrl = content?.path ? `/api/media/file/${content.path}` : ''
+                const content = meditation.content?.path || null
+
+                if (meditation.youtubeUrl) {
+                  const youtubeVideoId = new URL(meditation.youtubeUrl).searchParams.get('v')
+                  return (
+                    <iframe
+                      class="aspect-video w-full rounded-2xl shadow-lg bg-slate-100 dark:bg-slate-700"
+                      src={`https://www.youtube.com/embed/${youtubeVideoId}?rel=0`}
+                      title="YouTube video player"
+                      frameborder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowfullscreen={true}
+                    ></iframe>
+                  )
+                }
+
+                const audioUrl = content ? `/api/media/file/${content}` : ''
                 return (
                   <MeditationItem key={meditation.id} id={meditation.id as string} title={meditation.title as string} audioUrl={audioUrl} />
                 )
