@@ -173,9 +173,14 @@ const config = hybrid({
   },
 }) as HybridMode<BkndConfig>
 
+let bkndRuntimeAppInstance: Awaited<ReturnType<typeof createRuntimeApp>> | null = null
+let apiInstance: Api | null = null
+
 export async function getBkndApp(context: Context) {
-  const app = await createRuntimeApp(config, context)
-  return app
+  if (!bkndRuntimeAppInstance) {
+    bkndRuntimeAppInstance = await createRuntimeApp(config, context)
+  }
+  return bkndRuntimeAppInstance
 }
 
 export async function bkndAppFetch(context: Context) {
@@ -185,10 +190,12 @@ export async function bkndAppFetch(context: Context) {
 
 export async function getApi(context: Context) {
   const bkndApp = await getBkndApp(context)
-  const api = new Api({
-    fetcher: bkndApp.server.request as typeof fetch,
-  })
-  return api
+  if (!apiInstance) {
+    apiInstance = new Api({
+      fetcher: bkndApp.server.request as typeof fetch,
+    })
+  }
+  return apiInstance
 }
 
 export const bkndApp = new Hono()
