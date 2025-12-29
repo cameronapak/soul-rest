@@ -1,0 +1,553 @@
+{
+  "server": {
+    "cors": {
+      "origin": "*",
+      "allow_methods": [
+        "GET",
+        "POST",
+        "PATCH",
+        "PUT",
+        "DELETE"
+      ],
+      "allow_headers": [
+        "Content-Type",
+        "Content-Length",
+        "Authorization",
+        "Accept"
+      ],
+      "allow_credentials": true
+    },
+    "mcp": {
+      "enabled": false,
+      "path": "/api/system/mcp",
+      "logLevel": "emergency"
+    }
+  },
+  "data": {
+    "basepath": "/api/data",
+    "default_primary_format": "integer",
+    "entities": {
+      "pendingPartners": {
+        "type": "regular",
+        "fields": {
+          "id": {
+            "type": "primary",
+            "config": {
+              "format": "uuid",
+              "fillable": false,
+              "required": false
+            }
+          },
+          "name": {
+            "type": "text",
+            "config": {
+              "required": false
+            }
+          },
+          "contactName": {
+            "type": "text",
+            "config": {
+              "label": "Contact Name",
+              "required": false
+            }
+          },
+          "contactEmail": {
+            "type": "text",
+            "config": {
+              "label": "Contact Email",
+              "required": false
+            }
+          },
+          "website": {
+            "type": "text",
+            "config": {
+              "required": false
+            }
+          },
+          "whyWantListed": {
+            "type": "text",
+            "config": {
+              "label": "Reason to be Listed",
+              "required": false
+            }
+          },
+          "whyPartner": {
+            "type": "text",
+            "config": {
+              "label": "Reason to Partner",
+              "required": false
+            }
+          },
+          "logo": {
+            "type": "media",
+            "config": {
+              "max_items": 1,
+              "entity": "pendingPartners",
+              "required": false,
+              "fillable": [
+                "update"
+              ],
+              "virtual": true,
+              "mime_types": []
+            }
+          },
+          "adminNotes": {
+            "type": "text",
+            "config": {
+              "label": "Admin Notes",
+              "required": false
+            }
+          },
+          "status": {
+            "type": "enum",
+            "config": {
+              "options": {
+                "type": "objects",
+                "values": [
+                  {
+                    "label": "Pending",
+                    "value": "pending"
+                  },
+                  {
+                    "label": "Rejected",
+                    "value": "rejected"
+                  },
+                  {
+                    "label": "Approved",
+                    "value": "approved"
+                  }
+                ]
+              },
+              "required": false
+            }
+          },
+          "created_at": {
+            "type": "date",
+            "config": {
+              "type": "datetime",
+              "required": false
+            }
+          },
+          "updated_at": {
+            "type": "date",
+            "config": {
+              "type": "datetime",
+              "required": false
+            }
+          }
+        },
+        "config": {
+          "name": "Pending Partners",
+          "name_singular": "Pending Partner",
+          "primary_format": "uuid",
+          "sort_field": "id",
+          "sort_dir": "asc"
+        }
+      },
+      "partners": {
+        "type": "regular",
+        "fields": {
+          "id": {
+            "type": "primary",
+            "config": {
+              "format": "uuid",
+              "fillable": false,
+              "required": false
+            }
+          },
+          "name": {
+            "type": "text",
+            "config": {
+              "required": false
+            }
+          },
+          "contactName": {
+            "type": "text",
+            "config": {
+              "label": "Contact Name",
+              "required": false
+            }
+          },
+          "contactEmail": {
+            "type": "text",
+            "config": {
+              "label": "Contact Email",
+              "required": false
+            }
+          },
+          "website": {
+            "type": "text",
+            "config": {
+              "required": false
+            }
+          },
+          "logo": {
+            "type": "media",
+            "config": {
+              "max_items": 1,
+              "entity": "partners",
+              "required": false,
+              "fillable": [
+                "update"
+              ],
+              "virtual": true,
+              "mime_types": []
+            }
+          },
+          "approvedAt": {
+            "type": "date",
+            "config": {
+              "label": "Approved At",
+              "type": "date",
+              "required": false
+            }
+          },
+          "created_at": {
+            "type": "date",
+            "config": {
+              "type": "datetime",
+              "required": false
+            }
+          },
+          "updated_at": {
+            "type": "date",
+            "config": {
+              "type": "datetime",
+              "required": false
+            }
+          }
+        },
+        "config": {
+          "name": "Partners",
+          "name_singular": "Partner",
+          "primary_format": "uuid",
+          "sort_field": "id",
+          "sort_dir": "asc"
+        }
+      },
+      "meditations": {
+        "type": "regular",
+        "fields": {
+          "id": {
+            "type": "primary",
+            "config": {
+              "format": "uuid",
+              "fillable": false,
+              "required": false
+            }
+          },
+          "title": {
+            "type": "text",
+            "config": {
+              "required": false
+            }
+          },
+          "description": {
+            "type": "text",
+            "config": {
+              "required": false
+            }
+          },
+          "content": {
+            "type": "media",
+            "config": {
+              "max_items": 1,
+              "entity": "meditations",
+              "required": false,
+              "fillable": [
+                "update"
+              ],
+              "virtual": true,
+              "mime_types": []
+            }
+          },
+          "duration": {
+            "type": "number",
+            "config": {
+              "required": false
+            }
+          },
+          "thumbnail": {
+            "type": "media",
+            "config": {
+              "max_items": 1,
+              "entity": "meditations",
+              "required": false,
+              "fillable": [
+                "update"
+              ],
+              "virtual": true,
+              "mime_types": []
+            }
+          },
+          "listens": {
+            "type": "number",
+            "config": {
+              "required": false
+            }
+          },
+          "published": {
+            "type": "boolean",
+            "config": {
+              "default_value": true,
+              "required": false
+            }
+          },
+          "partners_id": {
+            "type": "relation",
+            "config": {
+              "label": "Partners",
+              "required": false,
+              "reference": "partners",
+              "target": "partners",
+              "target_field": "id",
+              "target_field_type": "text",
+              "on_delete": "set null"
+            }
+          },
+          "created_at": {
+            "type": "date",
+            "config": {
+              "type": "datetime",
+              "required": false
+            }
+          },
+          "updated_at": {
+            "type": "date",
+            "config": {
+              "type": "datetime",
+              "required": false
+            }
+          }
+        },
+        "config": {
+          "name": "Meditations",
+          "primary_format": "uuid",
+          "name_singular": "Meditation",
+          "sort_field": "id",
+          "sort_dir": "asc"
+        }
+      },
+      "media": {
+        "type": "system",
+        "fields": {
+          "id": {
+            "type": "primary",
+            "config": {
+              "format": "integer",
+              "fillable": false,
+              "required": false
+            }
+          },
+          "reference": {
+            "type": "text",
+            "config": {
+              "required": false
+            }
+          },
+          "entity_id": {
+            "type": "text",
+            "config": {
+              "required": false
+            }
+          },
+          "path": {
+            "type": "text",
+            "config": {
+              "required": true
+            }
+          },
+          "folder": {
+            "type": "boolean",
+            "config": {
+              "default_value": false,
+              "hidden": true,
+              "fillable": [
+                "create"
+              ],
+              "required": false
+            }
+          },
+          "mime_type": {
+            "type": "text",
+            "config": {
+              "required": false
+            }
+          },
+          "size": {
+            "type": "number",
+            "config": {
+              "required": false
+            }
+          },
+          "scope": {
+            "type": "text",
+            "config": {
+              "hidden": true,
+              "fillable": [
+                "create"
+              ],
+              "required": false
+            }
+          },
+          "etag": {
+            "type": "text",
+            "config": {
+              "required": false
+            }
+          },
+          "modified_at": {
+            "type": "date",
+            "config": {
+              "type": "datetime",
+              "required": false
+            }
+          },
+          "metadata": {
+            "type": "json",
+            "config": {
+              "required": false
+            }
+          }
+        },
+        "config": {
+          "sort_field": "id",
+          "sort_dir": "asc"
+        }
+      }
+    },
+    "relations": {
+      "n1_meditations_partners": {
+        "type": "n:1",
+        "source": "meditations",
+        "target": "partners",
+        "config": {
+          "with_limit": 5
+        }
+      },
+      "poly_pendingPartners_media_logo": {
+        "type": "poly",
+        "source": "pendingPartners",
+        "target": "media",
+        "config": {
+          "mappedBy": "logo",
+          "targetCardinality": 1
+        }
+      },
+      "poly_partners_media_logo": {
+        "type": "poly",
+        "source": "partners",
+        "target": "media",
+        "config": {
+          "mappedBy": "logo",
+          "targetCardinality": 1
+        }
+      },
+      "poly_meditations_media_content": {
+        "type": "poly",
+        "source": "meditations",
+        "target": "media",
+        "config": {
+          "mappedBy": "content",
+          "targetCardinality": 1
+        }
+      },
+      "poly_meditations_media_thumbnail": {
+        "type": "poly",
+        "source": "meditations",
+        "target": "media",
+        "config": {
+          "mappedBy": "thumbnail",
+          "targetCardinality": 1
+        }
+      }
+    },
+    "indices": {
+      "idx_meditations_published": {
+        "entity": "meditations",
+        "fields": [
+          "published"
+        ],
+        "unique": false
+      },
+      "idx_unique_media_path": {
+        "entity": "media",
+        "fields": [
+          "path"
+        ],
+        "unique": true
+      },
+      "idx_media_reference": {
+        "entity": "media",
+        "fields": [
+          "reference"
+        ],
+        "unique": false
+      },
+      "idx_media_entity_id": {
+        "entity": "media",
+        "fields": [
+          "entity_id"
+        ],
+        "unique": false
+      }
+    }
+  },
+  "auth": {
+    "enabled": false,
+    "basepath": "/api/auth",
+    "entity_name": "users",
+    "allow_register": true,
+    "jwt": {
+      "secret": "",
+      "alg": "HS256",
+      "fields": [
+        "id",
+        "email",
+        "role"
+      ]
+    },
+    "cookie": {
+      "path": "/",
+      "sameSite": "lax",
+      "secure": true,
+      "httpOnly": true,
+      "expires": 604800,
+      "partitioned": false,
+      "renew": true,
+      "pathSuccess": "/",
+      "pathLoggedOut": "/"
+    },
+    "strategies": {
+      "password": {
+        "type": "password",
+        "enabled": true,
+        "config": {
+          "hashing": "sha256"
+        }
+      }
+    },
+    "guard": {
+      "enabled": false
+    },
+    "roles": {}
+  },
+  "media": {
+    "enabled": true,
+    "basepath": "/api/media",
+    "entity_name": "media",
+    "storage": {
+      "body_max_size": 0
+    },
+    "adapter": {
+      "type": "local",
+      "config": {
+        "path": "./public/uploads"
+      }
+    }
+  },
+  "flows": {
+    "basepath": "/api/flows",
+    "flows": {}
+  }
+}

@@ -1,19 +1,20 @@
 import type { BkndConfig } from 'bknd'
 import { boolean, date, em, entity, enumm, medium, number, systemEntity, text } from 'bknd'
 import { createRuntimeApp } from 'bknd/adapter'
-import { registerLocalMediaAdapter, writer } from 'bknd/adapter/bun'
+import { registerLocalMediaAdapter, writer, reader } from 'bknd/adapter/bun'
 import { sqlite } from 'bknd/adapter/sqlite'
 import { Api } from 'bknd/client'
-import type { HybridMode } from 'bknd/modes'
+import { hybrid, type HybridMode } from 'bknd/modes'
 import { syncTypes, timestamps } from 'bknd/plugins'
 import type { Context } from 'hono'
 import { Hono } from 'hono'
+import { writeFile } from 'node:fs/promises'
 import { serveStatic } from 'hono/bun'
 
 const local = registerLocalMediaAdapter()
 
 const connection = sqlite({ url: 'file:./data.db' })
-const config = {
+const config = hybrid({
   connection,
   config: {
     data: em(
@@ -146,24 +147,26 @@ const config = {
         enabled: true,
         // your writing function (required)
         write: async (et) => {
-          console.log('WRITE')
-          await Bun.write('bknd-types.d.ts', et.toString())
+          console.log('WRITE FILES')
+          await writeFile('bknd-types.d.ts', et.toString(), 'utf-8')
         },
       }),
     ],
   },
+  // @ts-expect-error - I know this says it's not a key, but it does in fact work.
   adminOptions: {
     adminBasepath: '/admin',
     logoReturnPath: '/../',
   },
   writer,
-  typesFilePath: 'src/bknd-types.d.ts',
+  reader,
+  typesFilePath: 'bknd-types.d.ts',
   isProduction: process.env?.PROD === 'true',
   syncSchema: {
     force: true,
     drop: true,
   },
-} as HybridMode<BkndConfig>
+}) as HybridMode<BkndConfig>
 
 export async function getBkndApp(context: Context) {
   const app = await createRuntimeApp(config, context)
