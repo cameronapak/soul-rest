@@ -35,12 +35,12 @@ app.get('/', async (c) => {
   return c.html(
     <Layout title="Meditations">
       <section class="flex flex-col gap-4 grow p-6">
-        <h1 class="text-4xl font-bold">Meditations</h1>
+        <h1 class="text-4xl font-bold">Soul Rest</h1>
         <a href="/admin" class="btn w-fit">
           Admin
         </a>
 
-        <div id="meditations-container">
+        <div id="meditations-container" class="max-w-sm">
           {meditations && meditations.length > 0 ? (
             <div id="meditations" class="flex flex-col gap-4">
               {meditations.map((meditation) => {
