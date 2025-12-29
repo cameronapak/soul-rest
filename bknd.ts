@@ -161,6 +161,12 @@ const config = hybrid({
   writer,
   reader,
   typesFilePath: 'bknd-types.d.ts',
+  configFilePath: 'bknd-config.json',
+  syncSecrets: {
+    outFile: '.env.local',
+    format: 'env',
+    includeSecrets: true,
+  },
   isProduction: process.env?.PROD === 'true',
   syncSchema: {
     force: true,
