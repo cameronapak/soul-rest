@@ -50,6 +50,7 @@ app.get('/', async (c) => {
                   const youtubeVideoId = new URL(meditation.youtubeUrl).searchParams.get('v')
                   return (
                     <iframe
+                      key={meditation.id}
                       class="aspect-video w-full rounded-2xl shadow-lg bg-slate-100 dark:bg-slate-700"
                       src={`https://www.youtube.com/embed/${youtubeVideoId}?rel=0`}
                       title="YouTube video player"
