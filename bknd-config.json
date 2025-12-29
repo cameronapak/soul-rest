@@ -18,7 +18,7 @@
       "allow_credentials": true
     },
     "mcp": {
-      "enabled": false,
+      "enabled": true,
       "path": "/api/system/mcp",
       "logLevel": "emergency"
     }
