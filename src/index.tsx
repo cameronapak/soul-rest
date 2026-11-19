@@ -13,7 +13,6 @@ const MeditationItem = ({ title, id, audioUrl }: { title: string; id: string; au
   return (
     <div id={`meditation-${id}`} class="flex items-center justify-between gap-4 p-4 border rounded-lg bg-card">
       <span class="font-medium">{title}</span>
-      {/* @ts-expect-error - captions not needed for this simple POC */}
       <audio id={`audio-${id}`} src={audioUrl} controls class="w-full"></audio>
     </div>
   )
@@ -21,16 +20,33 @@ const MeditationItem = ({ title, id, audioUrl }: { title: string; id: string; au
 
 app.get('/', async (c) => {
   const bkndApi = await getApi(c)
-  const { data: meditations } = await bkndApi.data.readMany('meditations', {
+  const result = await bkndApi.data.readMany('meditations', {
     where: {
       published: true,
-    },
-    with: {
-      content: {},
     },
     // sort: '-created_at',
     limit: 500,
   })
+  if (!result.ok) {
+    return c.text('Failed to load meditations', 500)
+  }
+  const meditations = result.data
+  const contentPaths = new Map<string, string>()
+  if (meditations.length > 0) {
+    const media = await bkndApi.data.readMany('media', {
+      where: {
+        reference: 'meditations.content',
+        entity_id: { $in: meditations.map((meditation) => meditation.id) },
+      },
+      limit: 500,
+    })
+    if (!media.ok) {
+      return c.text('Failed to load meditation media', 500)
+    }
+    for (const file of media.data) {
+      if (file.entity_id) contentPaths.set(file.entity_id, file.path)
+    }
+  }
 
   return c.html(
     <Layout title="Meditations">
@@ -44,7 +60,7 @@ app.get('/', async (c) => {
           {meditations && meditations.length > 0 ? (
             <div id="meditations" class="flex flex-col gap-4">
               {meditations.map((meditation) => {
-                const content = meditation.content?.path || null
+                const content = contentPaths.get(meditation.id as string)
 
                 if (meditation.youtubeUrl) {
                   const youtubeVideoId = new URL(meditation.youtubeUrl).searchParams.get('v')

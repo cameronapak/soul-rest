@@ -1,18 +1,17 @@
-import type { BkndConfig } from 'bknd'
 import { boolean, date, em, entity, enumm, medium, number, systemEntity, text } from 'bknd'
 import { createRuntimeApp } from 'bknd/adapter'
-import { reader, registerLocalMediaAdapter, writer } from 'bknd/adapter/bun'
+import { registerLocalMediaAdapter, writer } from 'bknd/adapter/bun'
 import { sqlite } from 'bknd/adapter/sqlite'
 import { Api } from 'bknd/client'
-import { code, type CodeMode } from 'bknd/modes'
-import { syncTypes, timestamps } from 'bknd/plugins'
+import { code } from 'bknd/modes'
+import { timestamps } from 'bknd/plugins'
 import type { Context } from 'hono'
 import { Hono } from 'hono'
 import { serveStatic } from 'hono/bun'
 
 const local = registerLocalMediaAdapter()
 
-const connection = sqlite({ url: 'file:./data.db' })
+const connection = sqlite({ url: './data.db' })
 const config = code({
   connection,
   config: {
@@ -124,15 +123,6 @@ const config = code({
       }),
     },
   },
-  onBuilt: async (app) => {
-    // This can only really run locally because it requires
-    // file access...
-    try {
-      await app.em.schema().sync({ force: true })
-    } catch (e) {
-      console.error(e)
-    }
-  },
   options: {
     mode: 'code',
     manager: {
@@ -143,25 +133,9 @@ const config = code({
         entities: ['pendingPartners', 'partners', 'meditations'],
         setUpdatedOnCreate: true,
       }),
-
-      syncTypes({
-        // whether to enable the plugin, make sure to disable in production
-        enabled: true,
-        // your writing function (required)
-        write: async (et) => {
-          console.log('WRITE FILES')
-          await Bun.write('bknd-types.d.ts', et.toString())
-        },
-      }),
     ],
   },
-  // @ts-expect-error - I know this says it's not a key, but it does in fact work.
-  adminOptions: {
-    adminBasepath: '/admin',
-    logoReturnPath: '/../',
-  },
   writer,
-  reader,
   typesFilePath: 'bknd-types.d.ts',
   configFilePath: 'bknd-config.json',
   syncSecrets: {
@@ -174,14 +148,20 @@ const config = code({
     force: true,
     drop: true,
   },
-}) as CodeMode<BkndConfig>
+})
 
 let bkndRuntimeAppInstance: Awaited<ReturnType<typeof createRuntimeApp>> | null = null
 let apiInstance: Api | null = null
 
 export async function getBkndApp(context: Context) {
   if (!bkndRuntimeAppInstance) {
-    bkndRuntimeAppInstance = await createRuntimeApp(config, context)
+    bkndRuntimeAppInstance = await createRuntimeApp({
+      ...config,
+      adminOptions: {
+        adminBasepath: '/admin',
+        logoReturnPath: '/../',
+      },
+    }, context)
   }
   return bkndRuntimeAppInstance
 }
